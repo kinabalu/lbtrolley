@@ -87,12 +87,6 @@ class LagunaTrolley(object):
 def main():
     parser = argparse.ArgumentParser(prog='lbtrolley')
 
-    # parser.add_argument(
-    #     "--test",
-    #     dest="test",
-    #     action="store_true"
-    # )
-
     parser.add_argument(
         "--lat",
         dest="latitude",
@@ -131,6 +125,16 @@ def main():
 
     if args.distance and args.latitude != None and args.longitude != None:
         lt.distance(args.latitude, args.longitude)
+    elif args.bus_list:
+        bus_data = lt.busList()
+        for bus in bus_data['results']:
+            print "Bus ID: %s" % bus['bus_id']
+            print "\tAddress: %s" % bus['address']
+            print "\tAverage/Instrument Speed: %dmph/%dmph" % (bus['avg_speed'], bus['inst_speed'])
+            print "\tHeading: %s" % bus['compass_heading']
+            print "\tLat/Long: (%s, %s)" % (bus['point']['latitude'], bus['point']['longitude'])
+            print "\tOdometer: %dmi" % bus['odometer']
+        # pprint(bus_data)
 
 if __name__ == '__main__':
     main()
