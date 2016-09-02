@@ -18,8 +18,8 @@ except ImportError:
 
 class LagunaTrolley(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, show_all=False):
+        self.show_all = show_all
 
     def busList(self):
 
@@ -42,7 +42,6 @@ class LagunaTrolley(object):
                 "label": {
                     "$regex": "^(?!#11).*$"
                 },
-                "status": "green",
                 "updatedAt": {
                     "$gte": {
                         "__type": "Date",
@@ -55,6 +54,9 @@ class LagunaTrolley(object):
                 }
             }
         }
+
+        if not self.show_all:
+            payload['where']['status'] = "green"
 
         url = 'https://api.parse.com/1/classes/BusData'
         res = requests.post(url, headers=headers, data=json.dumps(payload))
@@ -76,8 +78,9 @@ class LagunaTrolley(object):
 
             miles_distance = vincenty(from_location, bus_location).miles
 
+            bus_name = config.BUS_TAGS.get(bus['bus_id'], bus['bus_id'])
             speed = "average speed %dmph" % bus['avg_speed'] if bus['avg_speed'] > 0 else "stopped"
-            print 'Bus %s - %s heading %s is %d feet away at "%s"' % (bus['bus_id'], speed, bus['compass_heading'], (miles_distance * 5280), bus['address'])
+            print 'Bus [%s] - %s heading %s is %d feet away at "%s"' % (bus_name, speed, bus['compass_heading'], (miles_distance * 5280), bus['address'])
 
         # pprint(bus_data)
 
@@ -114,9 +117,15 @@ def main():
         action="store_true"
     )
 
+    parser.add_argument(
+        "--all",
+        dest="all",
+        action="store_true"
+    )
+
     args = parser.parse_args()
 
-    lt = LagunaTrolley()
+    lt = LagunaTrolley(show_all=args.all)
 
     # bus_list = lt.busList()
 
