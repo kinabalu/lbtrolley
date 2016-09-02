@@ -1,1 +1,2 @@
-requests==2.5.3
+requests==2.11.1
+geopy==1.11.0

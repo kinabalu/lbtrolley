@@ -4,6 +4,7 @@ import sys
 import json
 
 from datetime import datetime, timedelta
+from geopy.distance import vincenty
 
 from urllib import urlencode
 
@@ -60,8 +61,25 @@ class LagunaTrolley(object):
 
         data = res.json()
 
-        pprint(data)
+        return data
 
+    def distance(self, latitude, longitude):
+        from geopy.distance import vincenty
+
+        from_location = (latitude, longitude)
+
+        bus_data = self.busList()
+
+        print('# of Running Buses: %d' % len(bus_data['results']))
+        for idx, bus in enumerate(bus_data['results']):
+            bus_location = (bus['point']['latitude'], bus['point']['longitude'])
+
+            miles_distance = vincenty(from_location, bus_location).miles
+
+            speed = "average speed %dmph" % bus['avg_speed'] if bus['avg_speed'] > 0 else "stopped"
+            print 'Bus %s - %s heading %s is %d feet away at "%s"' % (bus['bus_id'], speed, bus['compass_heading'], (miles_distance * 5280), bus['address'])
+
+        # pprint(bus_data)
 
 def main():
     parser = argparse.ArgumentParser(prog='lbtrolley')
@@ -72,11 +90,38 @@ def main():
     #     action="store_true"
     # )
 
+    parser.add_argument(
+        "--lat",
+        dest="latitude",
+        type=float
+    )
+
+    parser.add_argument(
+        "--long",
+        dest="longitude",
+        type=float
+    )
+
+    parser.add_argument(
+        "--distance",
+        dest="distance",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "--bus_list",
+        dest="bus_list",
+        action="store_true"
+    )
+
     args = parser.parse_args()
 
     lt = LagunaTrolley()
 
-    lt.busList()
+    # bus_list = lt.busList()
+
+    if args.distance and args.latitude != None and args.longitude != None:
+        lt.distance(args.latitude, args.longitude)
 
 if __name__ == '__main__':
     main()
