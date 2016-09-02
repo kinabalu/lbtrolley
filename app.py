@@ -3,7 +3,7 @@ import requests
 import sys
 import json
 
-import datetime
+from datetime import datetime, timedelta
 
 from urllib import urlencode
 
@@ -28,6 +28,13 @@ class LagunaTrolley(object):
             'X-Parse-Client-Key': config.PARSE_CLIENT_KEY
         }
 
+        dtnow = datetime.now().date()
+        beginning_of_day = datetime(dtnow.year, dtnow.month, dtnow.day)
+        next_day = beginning_of_day + timedelta(1)
+
+        from_str = "%s.000Z" % beginning_of_day.isoformat()
+        to_str = "%s.000Z" % next_day.isoformat()
+
         payload = {
             "_method": "GET",
             "where": {
@@ -38,11 +45,11 @@ class LagunaTrolley(object):
                 "updatedAt": {
                     "$gte": {
                         "__type": "Date",
-                        "iso": "2016-09-02T00:00:00.000Z"
+                        "iso": from_str
                     },
                     "$lte": {
                         "__type": "Date",
-                        "iso": "2016-09-03T00:00:00.000Z"
+                        "iso": to_str
                     }
                 }
             }
@@ -59,11 +66,11 @@ class LagunaTrolley(object):
 def main():
     parser = argparse.ArgumentParser(prog='lbtrolley')
 
-    parser.add_argument(
-        "--test",
-        dest="test",
-        action="store_true"
-    )
+    # parser.add_argument(
+    #     "--test",
+    #     dest="test",
+    #     action="store_true"
+    # )
 
     args = parser.parse_args()
 
